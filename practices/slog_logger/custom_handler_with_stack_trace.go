@@ -3,6 +3,8 @@ package sloglogger
 import (
 	"context"
 	"log/slog"
+
+	stacktrace "github.com/OddEer0/golang-practice/practices/stack_trace"
 )
 
 type CtxHandler struct {
@@ -10,11 +12,11 @@ type CtxHandler struct {
 }
 
 func (c CtxHandler) Handle(ctx context.Context, r slog.Record) error {
-	if !IsLockStackTrace(ctx) {
-		r.AddAttrs(slog.String("stack_trace", GetStackTrace(ctx)))
+	if !stacktrace.IsLock(ctx) {
+		r.AddAttrs(slog.String("stack_trace", stacktrace.Get(ctx)))
 	}
 	if r.Level == slog.LevelError {
-		LockStackTrace(ctx)
+		stacktrace.Lock(ctx)
 	}
 	return c.Handler.Handle(ctx, r)
 }

@@ -5,21 +5,23 @@ import (
 	"log/slog"
 
 	sloglogger "github.com/OddEer0/golang-practice/practices/slog_logger"
+	stacktrace "github.com/OddEer0/golang-practice/practices/stack_trace"
 )
 
 func innerFn(ctx context.Context, logger *slog.Logger) {
-	sloglogger.AddStackTrace(ctx, "fn: RunLogSlogPractice")
-	defer sloglogger.DoneStackTrace(ctx)
+	stacktrace.Add(ctx, "runners", "-", "innerFn")
+	defer stacktrace.Done(ctx)
 	logger.ErrorContext(ctx, "inner func")
 }
 
 func RunLogSlogPractice() {
 	ctx := context.Background()
-	ctx = sloglogger.InitStackTrace(ctx)
-	sloglogger.AddStackTrace(ctx, "fn: RunLogSlogPractice")
-	defer sloglogger.DoneStackTrace(ctx)
+	ctx = stacktrace.InitWithCap(ctx, 10)
+	stacktrace.Add(ctx, "runners", "-", "RunLogSlogPractice")
+	defer stacktrace.Done(ctx)
 
 	logger := sloglogger.SetupLogger()
+	defer sloglogger.CloseLogger()
 
 	logger.Info(
 		"message",
