@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	sloglogger "github.com/OddEer0/golang-practice/practices/slog_logger"
+	slogLogger "github.com/OddEer0/golang-practice/practices/slog_logger"
 	stacktrace "github.com/OddEer0/golang-practice/practices/stack_trace"
 )
 
@@ -20,8 +20,8 @@ func RunLogSlogPractice() {
 	stacktrace.Add(ctx, "runners", "-", "RunLogSlogPractice")
 	defer stacktrace.Done(ctx)
 
-	logger := sloglogger.SetupLogger()
-	defer sloglogger.CloseLogger()
+	logger := slogLogger.SetupLogger()
+	defer slogLogger.CloseLogger()
 
 	logger.Info(
 		"message",

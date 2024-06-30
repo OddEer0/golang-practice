@@ -1,6 +1,10 @@
-package resourcemodel
+package resourceModel
+
+import "errors"
 
 type (
+	Conn map[string]bool 
+
 	User struct {
 		Id       string `json:"id"`
 		Login    string `json:"login"`
@@ -35,3 +39,18 @@ type (
 		Limit int
 	}
 )
+
+var (
+	ErrNotFoundConn = errors.New("model connection not found")
+	PostConns Conn = map[string]bool{"user": false, "comments": false}
+)
+
+func (a *AggregateOption) ValidateConn(conn Conn) error {
+	for _, connStr := range a.Conn {
+		if _, has := conn[connStr]; !has {
+			return ErrNotFoundConn
+		}		
+	}
+
+	return nil
+}

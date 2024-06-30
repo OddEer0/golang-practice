@@ -1,36 +1,33 @@
-package resourcerepository
+package resourceRepository
 
 import (
 	"context"
 
-	resourcemodel "github.com/OddEer0/golang-practice/resources/resource_model"
+	resourceModel "github.com/OddEer0/golang-practice/resources/resource_model"
 )
 
 type (
-	UserRepository interface {
-		GetById(context.Context, string) (*resourcemodel.User, error)
-		GetByIdCopy(context.Context, string) (resourcemodel.User, error)
-		Create(context.Context, resourcemodel.User) (*resourcemodel.User, error)
-		CreateCopy(context.Context, resourcemodel.User) (resourcemodel.User, error)
+	User interface {
+		GetById(context.Context, string) (*resourceModel.User, error)
+		GetByIdCopy(context.Context, string) (resourceModel.User, error)
+		Create(context.Context, resourceModel.User) (*resourceModel.User, error)
+		CreateCopy(context.Context, resourceModel.User) (resourceModel.User, error)
 		DeleteById(context.Context, string) error
 	}
-	PostRepository interface {
-		GetById(context.Context, string) (*resourcemodel.Post, error)
-		GetByIdCopy(context.Context, string) (resourcemodel.Post, error)
-		Create(context.Context, resourcemodel.Post) (*resourcemodel.Post, error)
-		CreateCopy(context.Context, resourcemodel.Post) (resourcemodel.Post, error)
+	Post interface {
+		GetById(context.Context, string) (*resourceModel.Post, error)
+		GetByIdCopy(context.Context, string) (resourceModel.Post, error)
+		Create(context.Context, resourceModel.Post) (*resourceModel.Post, error)
+		CreateCopy(context.Context, resourceModel.Post) (resourceModel.Post, error)
 		DeleteById(context.Context, string) error
-
-		GetPostAggregate(context.Context, string, *resourcemodel.AggregateOption) (*resourcemodel.PostAggregate, error)
-		GetPostAggregateCopy(context.Context, string, *resourcemodel.AggregateOption) (resourcemodel.PostAggregate, error)
 	}
-	CommentRepository interface {
-		GetById(context.Context, string) (*resourcemodel.Comment, error)
-		GetByIdCopy(context.Context, string) (resourcemodel.Comment, error)
-		Create(context.Context, resourcemodel.Comment) (*resourcemodel.Comment, error)
-		CreateCopy(context.Context, resourcemodel.Comment) (resourcemodel.Comment, error)
+	Comment interface {
+		GetById(context.Context, string) (*resourceModel.Comment, error)
+		GetByIdCopy(context.Context, string) (resourceModel.Comment, error)
+		Create(context.Context, resourceModel.Comment) (*resourceModel.Comment, error)
+		CreateCopy(context.Context, resourceModel.Comment) (resourceModel.Comment, error)
 		DeleteById(context.Context, string) error
 
-		GetByQuery(context.Context, *resourcemodel.QueryOption) ([]*resourcemodel.Comment, int, error)
+		GetByQuery(context.Context, *resourceModel.QueryOption) ([]*resourceModel.Comment, int, error)
 	}
 )

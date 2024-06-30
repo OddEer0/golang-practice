@@ -1,4 +1,4 @@
-package pgxpractice
+package pgxPractice
 
 import (
 	"context"

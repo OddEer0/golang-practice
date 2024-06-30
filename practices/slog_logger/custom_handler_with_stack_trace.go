@@ -1,4 +1,4 @@
-package sloglogger
+package slogLogger
 
 import (
 	"context"
