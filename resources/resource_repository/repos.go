@@ -10,9 +10,10 @@ type (
 	User interface {
 		GetById(context.Context, string) (*resourceModel.User, error)
 		GetByIdCopy(context.Context, string) (resourceModel.User, error)
-		Create(context.Context, resourceModel.User) (*resourceModel.User, error)
+		Create(context.Context, *resourceModel.User) (*resourceModel.User, error)
 		CreateCopy(context.Context, resourceModel.User) (resourceModel.User, error)
 		DeleteById(context.Context, string) error
+		UpdateUserLogin(context.Context, string, string) (*resourceModel.User, error)
 	}
 	Post interface {
 		GetById(context.Context, string) (*resourceModel.Post, error)
