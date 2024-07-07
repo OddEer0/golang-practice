@@ -11,36 +11,19 @@ import (
 )
 
 type (
-	CreateUserData struct {
-		Login string
-		Password string
-		Email string
-	}
-
-	PureUser struct {
-		Id domain.Id
-		Login string
-		Email string
-	}
-
-	PureUserAggregate struct {
-		Value PureUser
-		Posts []*model.Post
-	}
-
-	UserUseCase interface {
+	UserNOUseCase interface {
 		Create(context.Context, *CreateUserData) (PureUser, error)
 		GetUserById(context.Context, domain.Id, model.UserConns) (PureUserAggregate, error)
 		UpdateUserLogin(context.Context, domain.Id, string) (PureUser, error)
 	}
 
-	userUseCase struct {
+	userNOUseCase struct {
 		userRepository repository.User
 		postRepository repository.Post
 	}
 )
 
-func (u *userUseCase) Create(ctx context.Context, data *CreateUserData) (PureUser, error) {
+func (u *userNOUseCase) Create(ctx context.Context, data *CreateUserData) (PureUser, error) {
 	id := domain.Id(uuid.New().String())
 	_, err := u.userRepository.Create(ctx, &model.User{
 		Id: id,
@@ -61,8 +44,7 @@ func (u *userUseCase) Create(ctx context.Context, data *CreateUserData) (PureUse
 }
 
 
-// TODO - goroutines multi query
-func (u *userUseCase) GetUserById(ctx context.Context, id domain.Id, conns model.UserConns) (PureUserAggregate, error) {
+func (u *userNOUseCase) GetUserById(ctx context.Context, id domain.Id, conns model.UserConns) (PureUserAggregate, error) {
 	user, err := u.userRepository.GetById(ctx, id)
 	if err != nil {
 		return PureUserAggregate{}, nil
@@ -87,7 +69,7 @@ func (u *userUseCase) GetUserById(ctx context.Context, id domain.Id, conns model
 }
 
 // TODO - fix transaction
-func (u *userUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogin string) (PureUser, error) {
+func (u *userNOUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogin string) (PureUser, error) {
 	user, err := u.userRepository.UpdateLoginById(ctx, id, newLogin)
 	if err != nil {
 		return PureUser{}, err
@@ -108,8 +90,8 @@ func (u *userUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogi
 	}, nil
 }
 
-func NewUserUseCase(userRepository repository.User, postRepository repository.Post) UserUseCase {
-	return &userUseCase{
+func NewUserNOUseCase(userRepository repository.User, postRepository repository.Post) UserUseCase {
+	return &userNOUseCase{
 		userRepository: userRepository,
 		postRepository: postRepository,
 	}
