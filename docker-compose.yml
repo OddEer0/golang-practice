@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - '5500:5432'
+    environment:
+      POSTGRES_USER: eer0
+      POSTGRES_PASSWORD: hahaha1234
+      POSTGRES_DB: golang-practice

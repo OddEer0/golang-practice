@@ -2,13 +2,17 @@ package pgxPractice
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func ConnectPg(connstr string) *pgxpool.Pool {
-	cfg, err := pgxpool.ParseConfig(connstr)
+func ConnectPg(config *Config) *pgxpool.Pool {
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		config.Postgres.Host, config.Postgres.Port, config.Postgres.User, config.Postgres.Password, config.Postgres.DbName)
+
+	cfg, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		panic(err)
 	}
@@ -19,10 +23,10 @@ func ConnectPg(connstr string) *pgxpool.Pool {
 	cfg.MaxConnIdleTime = time.Minute * 20
 	cfg.HealthCheckPeriod = time.Minute * 2
 
-	poolconn, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	poolConn, err := pgxpool.NewWithConfig(context.Background(), cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	return poolconn
+	return poolConn
 }

@@ -3,7 +3,7 @@ package pgxPractice
 import (
 	"context"
 
-	resourcePort "github.com/OddEer0/golang-practice/resources/resource_port"
+	"github.com/OddEer0/golang-practice/resources/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,12 +17,12 @@ type pgxTransaction struct {
 	conn *pgxpool.Pool
 }
 
-func InjectTransaction(ctx context.Context, tx QueryExecutor) context.Context {
+func InjectTransaction(ctx context.Context, tx sql.QueryExecutor) context.Context {
 	return context.WithValue(ctx, PgxTransactionKey, tx)
 }
 
-func ExtractTransaction(ctx context.Context) QueryExecutor {
-	if tx, ok := ctx.Value(PgxTransactionKey).(QueryExecutor); ok {
+func ExtractTransaction(ctx context.Context) sql.QueryExecutor {
+	if tx, ok := ctx.Value(PgxTransactionKey).(sql.QueryExecutor); ok {
 		return tx
 	}
 	return nil
@@ -42,8 +42,4 @@ func (p *pgxTransaction) WithinTransaction(ctx context.Context, callback func(co
 
 	tx.Commit(ctx)
 	return nil
-}
-
-func NewPgxTransaction() resourcePort.Transactor {
-	return &pgxTransaction{}
 }

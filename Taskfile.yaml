@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+  pgx:
+    cmds:
+      - CONFIG_PATH=config/pgx_config.yaml go run practices/pgx_practice/main/main.go
+  pgx-migration:
+    # goose -dir migration/pgx_goose_migration create name_file sql
+    cmds:
+      - export GOOSE_DRIVER=postgres
+      - export GOOSE_DBSTRING=postgresql://eer0:hahaha1234@localhost:5500/golang-practice?sslmode=disable
+      - export GOOSE_MIGRATION_DIR=migration/pgx_goose_migration
+      - goose up
