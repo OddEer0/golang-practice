@@ -25,7 +25,7 @@ type (
 
 	Comment interface {
 		GetById(context.Context, domain.Id) (*model.Comment, error)
-		GetByPostId(context.Context, domain.Id) ([]*model.Comment, error)
+		GetByPostId(context.Context, domain.Id, *model.ManyOpt) ([]*model.Comment, error)
 		Create(context.Context, *model.Comment) (*model.Comment, error)
 		UpdateById(context.Context, *model.Comment) (*model.Comment, error)
 		DeleteById(context.Context, domain.Id) error

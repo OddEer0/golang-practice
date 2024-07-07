@@ -1,4 +1,4 @@
-package aggregate
+package model
 
 type (
 	ManyOpt struct {

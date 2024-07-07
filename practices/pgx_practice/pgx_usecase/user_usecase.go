@@ -3,7 +3,6 @@ package pgxUseCase
 import (
 	"context"
 
-	"github.com/OddEer0/golang-practice/resources/aggregate"
 	"github.com/OddEer0/golang-practice/resources/domain"
 	"github.com/OddEer0/golang-practice/resources/model"
 	"github.com/OddEer0/golang-practice/resources/repository"
@@ -11,6 +10,9 @@ import (
 
 type (
 	CreateUserData struct {
+		Login string
+		Password string
+		Email string
 	}
 
 	PureUser struct {
@@ -23,7 +25,7 @@ type (
 
 	UserUseCase interface {
 		Create(context.Context, *CreateUserData) (PureUser, error)
-		GetUserById(context.Context, domain.Id, aggregate.UserConns) (PureUserAggregate, error)
+		GetUserById(context.Context, domain.Id, model.UserConns) (PureUserAggregate, error)
 		UpdateUserLogin(context.Context, domain.Id, string) (PureUser, error)
 	}
 
@@ -37,7 +39,7 @@ func (u *userUseCase) Create(context.Context, *CreateUserData) (PureUser, error)
 	panic("unimplemented")
 }
 
-func (u *userUseCase) GetUserById(context.Context, domain.Id, aggregate.UserConns) (PureUserAggregate, error) {
+func (u *userUseCase) GetUserById(context.Context, domain.Id, model.UserConns) (PureUserAggregate, error) {
 	panic("unimplemented")
 }
 

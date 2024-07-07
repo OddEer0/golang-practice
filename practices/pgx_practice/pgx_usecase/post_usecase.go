@@ -5,13 +5,14 @@ import (
 
 	"github.com/OddEer0/golang-practice/resources/aggregate"
 	"github.com/OddEer0/golang-practice/resources/domain"
+	"github.com/OddEer0/golang-practice/resources/model"
 	"github.com/OddEer0/golang-practice/resources/repository"
 )
 
 type (
 	PostUseCase interface {
-		GetPostsByUserId(context.Context, domain.Id, aggregate.PostConns) ([]aggregate.Post, error)
-		GetPostById(context.Context, domain.Id, aggregate.PostConns) (aggregate.Post, error)
+		GetPostsByUserId(context.Context, domain.Id, model.PostConns) ([]aggregate.Post, error)
+		GetPostById(context.Context, domain.Id, model.PostConns) (aggregate.Post, error)
 	}
 
 	postUseCase struct {
@@ -20,13 +21,29 @@ type (
 	}
 )
 
-// GetPostById implements PostUseCase.
-func (p *postUseCase) GetPostById(context.Context, domain.Id, aggregate.PostConns) (aggregate.Post, error) {
-	panic("unimplemented")
+// TODO - add goroutine query
+func (p *postUseCase) GetPostById(ctx context.Context, id domain.Id, conns model.PostConns) (aggregate.Post, error) {
+	post, err := p.postRepository.GetById(ctx, id)
+	result := aggregate.Post{}
+
+	if err != nil {
+		return result, err
+	}
+
+	if opt, ok := conns["comments"]; ok {
+		comments, err := p.commentRepository.GetByPostId(ctx, id, opt)
+		if err != nil {
+			return result, err
+		}
+		result.Comments = comments
+	}
+	result.Value = post
+
+	return result, nil
 }
 
 // GetPostsByUserId implements PostUseCase.
-func (p *postUseCase) GetPostsByUserId(context.Context, domain.Id, aggregate.PostConns) ([]aggregate.Post, error) {
+func (p *postUseCase) GetPostsByUserId(context.Context, domain.Id, model.PostConns) ([]aggregate.Post, error) {
 	panic("unimplemented")
 }
 
