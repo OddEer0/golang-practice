@@ -2,6 +2,7 @@ package pgxUseCase
 
 import (
 	"context"
+	"github.com/OddEer0/golang-practice/resources/sql"
 	"time"
 
 	"github.com/OddEer0/golang-practice/resources/domain"
@@ -12,13 +13,13 @@ import (
 
 type (
 	CreateUserData struct {
-		Login string
+		Login    string
 		Password string
-		Email string
+		Email    string
 	}
 
 	PureUser struct {
-		Id domain.Id
+		Id    domain.Id
 		Login string
 		Email string
 	}
@@ -37,16 +38,17 @@ type (
 	userUseCase struct {
 		userRepository repository.User
 		postRepository repository.Post
+		transactor     sql.Transactor
 	}
 )
 
 func (u *userUseCase) Create(ctx context.Context, data *CreateUserData) (PureUser, error) {
 	id := domain.Id(uuid.New().String())
 	_, err := u.userRepository.Create(ctx, &model.User{
-		Id: id,
-		Login: data.Login,
-		Email: data.Email,
-		Password: data.Password, // FIXME - use bcrypt to hash password
+		Id:        id,
+		Login:     data.Login,
+		Email:     data.Email,
+		Password:  data.Password, // FIXME - use bcrypt to hash password
 		UpdatedAt: time.Now(),
 		CreatedAt: time.Now(),
 	})
@@ -54,12 +56,11 @@ func (u *userUseCase) Create(ctx context.Context, data *CreateUserData) (PureUse
 		return PureUser{}, err
 	}
 	return PureUser{
-		Id: id,
+		Id:    id,
 		Login: data.Login,
 		Email: data.Email,
 	}, nil
 }
-
 
 // TODO - goroutines multi query
 func (u *userUseCase) GetUserById(ctx context.Context, id domain.Id, conns model.UserConns) (PureUserAggregate, error) {
@@ -78,7 +79,7 @@ func (u *userUseCase) GetUserById(ctx context.Context, id domain.Id, conns model
 
 	return PureUserAggregate{
 		Value: PureUser{
-			Id: user.Id,
+			Id:    user.Id,
 			Login: user.Login,
 			Email: user.Email,
 		},
@@ -86,31 +87,35 @@ func (u *userUseCase) GetUserById(ctx context.Context, id domain.Id, conns model
 	}, nil
 }
 
-// TODO - fix transaction
 func (u *userUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogin string) (PureUser, error) {
-	user, err := u.userRepository.UpdateLoginById(ctx, id, newLogin)
-	if err != nil {
-		return PureUser{}, err
-	}
-
-	_, err = u.postRepository.UpdateBodyByUserId(ctx, &model.User{
-		Id: id,
-		Login: newLogin,
+	user := &model.User{}
+	var err error
+	err := u.transactor.WithinTransaction(ctx, func(transactionCtx context.Context) error {
+		user, err = u.userRepository.UpdateLoginById(ctx, id, newLogin)
+		if err != nil {
+			return err
+		}
+		_, err = u.postRepository.UpdateBodyByUserId(ctx, &model.User{
+			Id:    id,
+			Login: newLogin,
+		})
+		if err != nil {
+			return err
+		}
+		return nil
 	})
-	if err != nil {
-		return PureUser{}, err
-	}
 
 	return PureUser{
-		Id: user.Id,
+		Id:    user.Id,
 		Login: user.Login,
 		Email: user.Email,
 	}, nil
 }
 
-func NewUserUseCase(userRepository repository.User, postRepository repository.Post) UserUseCase {
+func NewUserUseCase(userRepository repository.User, postRepository repository.Post, transactor sql.Transactor) UserUseCase {
 	return &userUseCase{
 		userRepository: userRepository,
 		postRepository: postRepository,
+		transactor:     transactor,
 	}
 }

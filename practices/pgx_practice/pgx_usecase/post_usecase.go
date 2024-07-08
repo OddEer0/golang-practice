@@ -2,6 +2,7 @@ package pgxUseCase
 
 import (
 	"context"
+	"github.com/OddEer0/golang-practice/resources/sql"
 
 	"github.com/OddEer0/golang-practice/resources/aggregate"
 	"github.com/OddEer0/golang-practice/resources/domain"
@@ -18,6 +19,7 @@ type (
 	postUseCase struct {
 		postRepository    repository.Post
 		commentRepository repository.Comment
+		transactor        sql.Transactor
 	}
 )
 
@@ -47,9 +49,10 @@ func (p *postUseCase) GetPostsByUserId(context.Context, domain.Id, model.PostCon
 	panic("unimplemented")
 }
 
-func NewPostUseCase(postRepository repository.Post, commentRepository repository.Comment) PostUseCase {
+func NewPostUseCase(postRepository repository.Post, commentRepository repository.Comment, transactor sql.Transactor) PostUseCase {
 	return &postUseCase{
 		postRepository:    postRepository,
 		commentRepository: commentRepository,
+		transactor:        transactor,
 	}
 }

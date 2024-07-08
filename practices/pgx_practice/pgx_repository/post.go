@@ -6,6 +6,7 @@ import (
 	"github.com/OddEer0/golang-practice/resources/model"
 	"github.com/OddEer0/golang-practice/resources/repository"
 	"github.com/OddEer0/golang-practice/resources/sql"
+	"github.com/google/uuid"
 )
 
 type postRepository struct {
@@ -94,10 +95,24 @@ func (p *postRepository) DeleteById(ctx context.Context, id domain.Id) error {
 }
 
 func (p *postRepository) UpdateBodyByUserId(ctx context.Context, user *model.User) (*model.Post, error) {
-	return nil, nil
+	uniq := uuid.New().String()
+	db := p.getQueryExecutor(ctx)
+	post := &model.Post{}
+	err := db.QueryRow(ctx, `UPDATE posts SET title = $1 WHERE ownerId = $2 RETURNING id, ownerId, title, content, updatedAt, createdAt`, uniq, user.Id).Scan(
+		&post.Id,
+		&post.OwnerId,
+		&post.Title,
+		&post.Content,
+		&post.UpdatedAt,
+		&post.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
 }
 
-func NewPostRepository(txController sql.TransactionController, db sql.QueryExecutor) repository.Post {
+func NewPostRepository(db sql.QueryExecutor, txController sql.TransactionController) repository.Post {
 	return &postRepository{
 		txController: txController,
 		db:           db,
