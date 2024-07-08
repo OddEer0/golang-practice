@@ -1,11 +1,10 @@
-package runners
+package main
 
 import (
 	"context"
-	"log/slog"
-
 	slogLogger "github.com/OddEer0/golang-practice/practices/slog_logger"
 	stacktrace "github.com/OddEer0/golang-practice/practices/stack_trace"
+	"log/slog"
 )
 
 func innerFn(ctx context.Context, logger *slog.Logger) {
@@ -14,7 +13,7 @@ func innerFn(ctx context.Context, logger *slog.Logger) {
 	logger.ErrorContext(ctx, "inner func")
 }
 
-func RunLogSlogPractice() {
+func main() {
 	ctx := context.Background()
 	ctx = stacktrace.InitWithCap(ctx, 10)
 	stacktrace.Add(ctx, "runners", "-", "RunLogSlogPractice")

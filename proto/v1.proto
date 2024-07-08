@@ -1,0 +1,92 @@
+syntax = "proto3";
+package resourceV1;
+option go_package = "github.com/OddEer0/golang-practice/resources/proto";
+
+message Empty {}
+
+message ErrorDetail {
+  string message = 1;
+  int32 code = 2;
+}
+
+message Id {
+  string value = 1;
+}
+
+message ResponseUser {
+  string id = 1;
+  string login = 2;
+  string email = 3;
+}
+
+message PaginationOption {
+  int64 limit = 1;
+  int64 page = 2;
+  string sortBy = 3;
+  string sortDir = 4;
+}
+
+message ConnOption {
+  map<string, PaginationOption> conns = 1;
+}
+
+message ResponsePost {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message ResponseComment {
+  string id = 1;
+  string message = 2;
+}
+
+message ResponseUserAggregate {
+  ResponseUser value = 1;
+  repeated ResponsePost posts = 2;
+}
+
+message ResponsePostAggregate {
+  ResponsePost value = 1;
+  repeated ResponseComment comments= 2;
+  ResponseUser owner = 3;
+}
+
+message ResponseManyResponsePost {
+  repeated ResponsePostAggregate posts = 1;
+}
+
+message CreateUserRequest {
+  string login = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message GetUserByIdRequest {
+  string id = 1;
+  ConnOption connOption = 2;
+}
+
+message UpdateUserLoginRequest {
+  string id = 1;
+  string newLogin = 2;
+}
+
+message GetPostsByUserIdRequest {
+  string userId = 1;
+  ConnOption connOption = 2;
+}
+
+message GetPostByIdRequest {
+  string id = 1;
+  ConnOption connOption = 3;
+}
+
+service NewsService {
+  rpc getUserById(GetUserByIdRequest) returns(ResponseUserAggregate) {}
+  rpc createUser(CreateUserRequest) returns(ResponseUser) {}
+  rpc updateUserLogin(UpdateUserLoginRequest) returns(ResponseUser) {}
+
+  rpc getPostsByUserId(GetPostsByUserIdRequest) returns(ResponseManyResponsePost) {}
+  rpc getPostById(GetPostByIdRequest) returns(ResponsePostAggregate) {}
+}

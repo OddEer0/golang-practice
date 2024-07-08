@@ -1,6 +1,17 @@
 version: '3'
 
+env:
+  PROTO_SRC: 'proto'
+  PROTO_FILES: 'proto/*.proto'
+  PROTO_OUT: './protogen/'
+
 tasks:
+  go:
+    cmds:
+      - go run main.go
+  proto:
+    cmds:
+      - protoc -I $PROTO_SRC $PROTO_FILES --go_out=$PROTO_OUT --go_opt=paths=source_relative --go-grpc_out=$PROTO_OUT --go-grpc_opt=paths=source_relative
   pgx:
     cmds:
       - CONFIG_PATH=config/pgx_config.yaml go run practices/pgx_practice/main/main.go

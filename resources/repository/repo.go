@@ -22,7 +22,7 @@ type (
 		Create(context.Context, *model.Post) (*model.Post, error)
 		UpdateById(context.Context, *model.Post) (*model.Post, error)
 		DeleteById(context.Context, domain.Id) error
-		UpdateBodyByUserId(context.Context, *model.User) (*model.User, error)
+		UpdateBodyByUserId(context.Context, *model.User) (*model.Post, error)
 	}
 
 	Comment interface {
