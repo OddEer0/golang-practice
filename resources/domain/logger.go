@@ -1,7 +1,5 @@
 package domain
 
-import "context"
-
 type Logger interface {
-	Info(ctx context.Context)
+	Info(msg string, attrs ...any)
 }

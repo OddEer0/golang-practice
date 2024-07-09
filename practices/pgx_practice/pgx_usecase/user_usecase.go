@@ -90,7 +90,7 @@ func (u *userUseCase) GetUserById(ctx context.Context, id domain.Id, conns model
 func (u *userUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogin string) (PureUser, error) {
 	user := &model.User{}
 	var err error
-	err := u.transactor.WithinTransaction(ctx, func(transactionCtx context.Context) error {
+	err = u.transactor.WithinTransaction(ctx, func(transactionCtx context.Context) error {
 		user, err = u.userRepository.UpdateLoginById(ctx, id, newLogin)
 		if err != nil {
 			return err
