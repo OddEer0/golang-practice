@@ -31,6 +31,6 @@ type (
 		Create(context.Context, *model.Comment) (*model.Comment, error)
 		UpdateById(context.Context, *model.Comment) (*model.Comment, error)
 		DeleteById(context.Context, domain.Id) error
-		UpdateBodyByUserId(context.Context, *model.User) (*model.User, error)
+		UpdateBodyByUserId(context.Context, *model.User) error
 	}
 )

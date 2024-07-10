@@ -7,6 +7,7 @@ import (
 	"github.com/OddEer0/golang-practice/resources/repository"
 	"github.com/OddEer0/golang-practice/resources/sql"
 	"github.com/google/uuid"
+	"time"
 )
 
 type postRepository struct {
@@ -34,7 +35,7 @@ func (p *postRepository) GetById(ctx context.Context, id domain.Id) (*model.Post
 		&post.UpdatedAt,
 	)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInternal
 	}
 	return post, nil
 }
@@ -49,7 +50,7 @@ func (p *postRepository) GetByOwnerId(ctx context.Context, id domain.Id, opt *mo
 	}
 	rows, err := db.Query(ctx, queryStr, id, opt.SortBy, limit, page)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInternal
 	}
 	defer rows.Close()
 	var posts []*model.Post
@@ -64,12 +65,12 @@ func (p *postRepository) GetByOwnerId(ctx context.Context, id domain.Id, opt *mo
 			&post.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInternal
 		}
 	}
 	err = rows.Err()
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInternal
 	}
 
 	return posts, nil
@@ -79,19 +80,29 @@ func (p *postRepository) Create(ctx context.Context, post *model.Post) (*model.P
 	db := p.getQueryExecutor(ctx)
 	_, err := db.Exec(ctx, CreatePostQuery, post.Id, post.OwnerId, post.Title, post.Content, post.UpdatedAt, post.CreatedAt)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInternal
 	}
 	return post, nil
 }
 
 func (p *postRepository) UpdateById(ctx context.Context, post *model.Post) (*model.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	db := p.getQueryExecutor(ctx)
+	updatedTime := time.Now()
+	_, err := db.Exec(ctx, UpdatePostById, post.Title, post.Content, updatedTime, post.Id)
+	if err != nil {
+		return nil, domain.ErrInternal
+	}
+	post.UpdatedAt = updatedTime
+	return post, nil
 }
 
 func (p *postRepository) DeleteById(ctx context.Context, id domain.Id) error {
-	//TODO implement me
-	panic("implement me")
+	db := p.getQueryExecutor(ctx)
+	_, err := db.Exec(ctx, DeletePostByIdQuery, id)
+	if err != nil {
+		return domain.ErrInternal
+	}
+	return nil
 }
 
 func (p *postRepository) UpdateBodyByUserId(ctx context.Context, user *model.User) (*model.Post, error) {
@@ -107,7 +118,7 @@ func (p *postRepository) UpdateBodyByUserId(ctx context.Context, user *model.Use
 		&post.CreatedAt,
 	)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInternal
 	}
 	return post, nil
 }

@@ -15,4 +15,7 @@ const (
 		UPDATE users SET login = $1 WHERE id = $2
 		RETURNING id, login, email, password, updatedAt, createdAt;
 	`
+	UpdateUserById = `
+		UPDATE users SET login = $1, email = $2, password = $3, updatedAt = $4 WHERE id = $5
+	`
 )

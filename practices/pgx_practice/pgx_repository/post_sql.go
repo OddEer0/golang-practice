@@ -18,4 +18,13 @@ const (
 		ORDER BY $2 ASC;
 		LIMIT $3 OFFSET $4;
 	`
+	GetPostsBodyByUserIdQuery = `
+		SELECT id, title, content FROM posts WHERE id = $1;
+	`
+	DeletePostByIdQuery = `
+		DELETE FROM posts WHERE id = $1;
+	`
+	UpdatePostById = `
+		UPDATE posts SET title = $1, content = $2, updatedAt = $3 WHERE id = $4;
+	`
 )

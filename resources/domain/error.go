@@ -21,6 +21,12 @@ const (
 	ErrNotFoundMessage     = "Not found"
 )
 
+var (
+	ErrInternal  error = NewErr(ErrInternalCode, ErrInternalMessage)
+	ErrForbidden error = NewErr(ErrForbiddenCode, ErrForbiddenMessage)
+	ErrNotFound  error = NewErr(ErrNotFoundCode, ErrNotFoundMessage)
+)
+
 type Error struct {
 	Code
 	Message string
@@ -37,7 +43,7 @@ func (e Error) Error() string {
 
 func NewErr(code Code, message string) error {
 	return Error{
-		Code: code,
+		Code:    code,
 		Message: message,
 	}
 }
