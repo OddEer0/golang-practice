@@ -18,4 +18,10 @@ const (
 	UpdateUserById = `
 		UPDATE users SET login = $1, email = $2, password = $3, updatedAt = $4 WHERE id = $5
 	`
+	GetUserByQueryPart1 = `
+		SELECT id, login, email, password, updatedAt, createdAt FROM posts
+		ORDER BY `
+	GetUserByQueryPart12 = `
+		LIMIT $1 OFFSET $2;
+	`
 )

@@ -2,15 +2,21 @@ package pgxHandler
 
 import (
 	"context"
-	"errors"
 	pgxInteractor "github.com/OddEer0/golang-practice/practices/pgx_practice/pgx_interactor"
 	pgxMapper "github.com/OddEer0/golang-practice/practices/pgx_practice/pgx_mapper"
 	pgxUseCase "github.com/OddEer0/golang-practice/practices/pgx_practice/pgx_usecase"
 	proto "github.com/OddEer0/golang-practice/protogen"
 	"github.com/OddEer0/golang-practice/resources/domain"
 	"github.com/OddEer0/golang-practice/resources/model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/google/uuid"
+	"log/slog"
+	"time"
+)
+
+var (
+	userMapper    = pgxMapper.UserMapper{}
+	postMapper    = pgxMapper.PostMapper{}
+	commentMapper = pgxMapper.CommentMapper{}
 )
 
 type GrpcHandler struct {
@@ -18,27 +24,105 @@ type GrpcHandler struct {
 	interactor *pgxInteractor.Interactor
 }
 
-var (
-	userMapper = pgxMapper.UserMapper{}
-	postMapper = pgxMapper.PostMapper{}
-)
+func (g *GrpcHandler) GetUserByQuery(ctx context.Context, request *proto.GetUserByQueryRequest) (*proto.ResponseManyUserAggregate, error) {
+	panic("implement me")
+}
 
-func Catch(err error) error {
-	var domainErr *domain.Error
-	if errors.As(err, &domainErr) {
-		code := codes.Internal
-		switch domainErr.Code {
-		case domain.ErrInternalCode:
-			code = codes.Internal
-		case domain.ErrNotFoundCode:
-			code = codes.NotFound
-		}
-		return status.Error(code, domainErr.Message)
+func (g *GrpcHandler) DeleteUserById(ctx context.Context, id *proto.Id) (*proto.Empty, error) {
+	slog.Info("request data", slog.Any("request", id))
+	err := g.interactor.UserRepository.DeleteById(ctx, domain.Id(id.Value))
+	if err != nil {
+		return nil, err
 	}
-	return status.Error(codes.Internal, err.Error())
+	return &proto.Empty{}, nil
+}
+
+func (g *GrpcHandler) DeletePostById(ctx context.Context, id *proto.Id) (*proto.Empty, error) {
+	slog.Info("request data", slog.Any("request", id))
+	err := g.interactor.PostRepository.DeleteById(ctx, domain.Id(id.Value))
+	if err != nil {
+		return nil, Catch(err)
+	}
+	return &proto.Empty{}, nil
+}
+
+func (g *GrpcHandler) UpdatePostById(ctx context.Context, request *proto.UpdatePostByIdRequest) (*proto.ResponsePost, error) {
+	slog.Info("request data", slog.Any("request", request))
+	res, err := g.interactor.PostRepository.UpdateById(ctx, &model.Post{
+		Id:      domain.Id(request.Id),
+		Title:   request.Title,
+		Content: request.Content,
+	})
+	if err != nil {
+		return nil, Catch(err)
+	}
+	return postMapper.PostToGrpcResponsePost(res), nil
+}
+
+func (g *GrpcHandler) GetCommentsByPostId(ctx context.Context, request *proto.GetCommentByIdRequest) (*proto.ResponseManyCommentAggregate, error) {
+	slog.Info("request data", slog.Any("request", request))
+	connOpt := model.CommentConns{}
+	for key, opt := range request.ConnOption.Conns {
+		connOpt[key] = &model.ManyOpt{
+			Limit:   uint(opt.Limit),
+			Page:    uint(opt.Page),
+			SortDir: opt.SortDir,
+			SortBy:  opt.SortBy,
+		}
+	}
+	res, err := g.interactor.CommentUseCase.GetCommentsByPostId(ctx, domain.Id(request.Id), &model.ManyOpt{
+		Limit:   uint(request.Option.Limit),
+		Page:    uint(request.Option.Page),
+		SortDir: request.Option.SortDir,
+		SortBy:  request.Option.SortBy,
+	}, connOpt)
+	if err != nil {
+		return nil, Catch(err)
+	}
+
+	return &proto.ResponseManyCommentAggregate{
+		Comments: commentMapper.CommentAggregatesToGrpcResponseCommentAggregates(res),
+	}, nil
+}
+
+func (g *GrpcHandler) GetCommentsByOwnerId(ctx context.Context, request *proto.GetCommentByIdRequest) (*proto.ResponseManyCommentAggregate, error) {
+	slog.Info("request data", slog.Any("request", request))
+	commentConn := model.CommentConns(ConvertGrpcConnsToPostConns(request.ConnOption))
+	res, err := g.interactor.CommentUseCase.GetCommentsByOwnerId(ctx, domain.Id(request.Id), &model.ManyOpt{
+		Limit:   uint(request.Option.Limit),
+		Page:    uint(request.Option.Page),
+		SortDir: request.Option.SortDir,
+		SortBy:  request.Option.SortBy,
+	}, commentConn)
+	if err != nil {
+		return nil, Catch(err)
+	}
+
+	return &proto.ResponseManyCommentAggregate{
+		Comments: commentMapper.CommentAggregatesToGrpcResponseCommentAggregates(res),
+	}, nil
+}
+
+func (g *GrpcHandler) UpdateCommentById(ctx context.Context, request *proto.UpdateCommentByIdRequest) (*proto.ResponseComment, error) {
+	slog.Info("request data", slog.Any("request", request))
+	res, err := g.interactor.CommentRepository.UpdateById(ctx, &model.Comment{})
+	if err != nil {
+		return nil, Catch(err)
+	}
+	return commentMapper.CommentToGrpcResponseComment(res), nil
+}
+
+func (g *GrpcHandler) DeleteCommentById(ctx context.Context, id *proto.Id) (*proto.Empty, error) {
+	slog.Info("request data", slog.Any("request", id))
+	err := g.interactor.CommentRepository.DeleteById(ctx, domain.Id(id.Value))
+	if err != nil {
+		return nil, Catch(err)
+	}
+	return &proto.Empty{}, nil
 }
 
 func (g *GrpcHandler) GetUserById(ctx context.Context, request *proto.GetUserByIdRequest) (*proto.ResponseUserAggregate, error) {
+	slog.Info("request data", slog.Any("request", request))
 	connOpt := model.UserConns{}
 	for key, opt := range request.ConnOption.Conns {
 		connOpt[key] = &model.ManyOpt{
@@ -57,6 +141,7 @@ func (g *GrpcHandler) GetUserById(ctx context.Context, request *proto.GetUserByI
 }
 
 func (g *GrpcHandler) CreateUser(ctx context.Context, request *proto.CreateUserRequest) (*proto.ResponseUser, error) {
+	slog.Info("request data", slog.Any("request", request))
 	newUser, err := g.interactor.UserUseCase.Create(ctx, &pgxUseCase.CreateUserData{
 		Login:    request.Login,
 		Email:    request.Email,
@@ -71,6 +156,7 @@ func (g *GrpcHandler) CreateUser(ctx context.Context, request *proto.CreateUserR
 }
 
 func (g *GrpcHandler) UpdateUserLogin(ctx context.Context, request *proto.UpdateUserLoginRequest) (*proto.ResponseUser, error) {
+	slog.Info("request data", slog.Any("request", request))
 	pureUser, err := g.interactor.UserUseCase.UpdateUserLogin(ctx, domain.Id(request.Id), request.NewLogin)
 	if err != nil {
 		return nil, Catch(err)
@@ -94,8 +180,14 @@ func ConvertGrpcConnsToPostConns(option *proto.ConnOption) model.PostConns {
 }
 
 func (g *GrpcHandler) GetPostsByUserId(ctx context.Context, request *proto.GetPostsByUserIdRequest) (*proto.ResponseManyResponsePost, error) {
-	postConn := ConvertGrpcConnsToPostConns(request.ConnOption)
-	postAggregates, err := g.interactor.PostUseCase.GetPostsByUserId(ctx, domain.Id(request.UserId), postConn)
+	slog.Info("request data", slog.Any("request", request))
+	postConns := ConvertGrpcConnsToPostConns(request.ConnOption)
+	postAggregates, err := g.interactor.PostUseCase.GetPostsByUserId(ctx, domain.Id(request.UserId), &model.ManyOpt{
+		Limit:   uint(request.Option.Limit),
+		Page:    uint(request.Option.Page),
+		SortDir: request.Option.SortDir,
+		SortBy:  request.Option.SortBy,
+	}, postConns)
 	if err != nil {
 		return nil, Catch(err)
 	}
@@ -104,13 +196,50 @@ func (g *GrpcHandler) GetPostsByUserId(ctx context.Context, request *proto.GetPo
 }
 
 func (g *GrpcHandler) GetPostById(ctx context.Context, request *proto.GetPostByIdRequest) (*proto.ResponsePostAggregate, error) {
+	slog.Info("request data", slog.Any("request", request))
 	postConn := ConvertGrpcConnsToPostConns(request.ConnOption)
 	postAggregate, err := g.interactor.PostUseCase.GetPostById(ctx, domain.Id(request.Id), postConn)
 	if err != nil {
 		return nil, Catch(err)
 	}
 
-	return postMapper.PostAggregateToResponsePostAggregate(postAggregate), nil
+	return postMapper.PostAggregateToResponsePostAggregate(&postAggregate), nil
+}
+
+func (g *GrpcHandler) CreatePost(ctx context.Context, request *proto.CreatePostRequest) (*proto.ResponsePost, error) {
+	slog.Info("request data", slog.Any("request", request))
+	res, err := g.interactor.PostRepository.Create(ctx, &model.Post{
+		Id:        domain.Id(uuid.New().String()),
+		Content:   request.Content,
+		OwnerId:   domain.Id(request.OwnerId),
+		Title:     request.Title,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
+	if err != nil {
+		return nil, Catch(domain.ErrInternal)
+	}
+
+	return postMapper.PostToGrpcResponsePost(res), nil
+}
+
+func (g *GrpcHandler) CreateComment(ctx context.Context, request *proto.CreateCommentRequest) (*proto.ResponseComment, error) {
+	slog.Info("request data", slog.Any("request", request))
+	comment, err := g.interactor.CommentRepository.Create(ctx, &model.Comment{
+		Id:        domain.Id(uuid.New().String()),
+		OwnerId:   domain.Id(request.OwnerId),
+		PostId:    domain.Id(request.PostId),
+		Message:   request.Message,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
+	if err != nil {
+		return nil, Catch(domain.ErrInternal)
+	}
+	return &proto.ResponseComment{
+		Id:      string(comment.Id),
+		Message: comment.Message,
+	}, nil
 }
 
 func NewGrpcHandler(interactor *pgxInteractor.Interactor) proto.NewsServiceServer {

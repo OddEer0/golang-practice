@@ -3,11 +3,12 @@ package pgxMapper
 import (
 	proto "github.com/OddEer0/golang-practice/protogen"
 	"github.com/OddEer0/golang-practice/resources/aggregate"
+	"github.com/OddEer0/golang-practice/resources/model"
 )
 
 type PostMapper struct{}
 
-func (p PostMapper) PostAggregateToResponsePostAggregate(d aggregate.Post) *proto.ResponsePostAggregate {
+func (p PostMapper) PostAggregateToResponsePostAggregate(d *aggregate.Post) *proto.ResponsePostAggregate {
 	post := &proto.ResponsePostAggregate{
 		Value: &proto.ResponsePost{
 			Id:      string(d.Value.Id),
@@ -36,8 +37,8 @@ func (p PostMapper) PostAggregateToResponsePostAggregate(d aggregate.Post) *prot
 	return post
 }
 
-func (p PostMapper) PostAggregatesToGrpcResponseManyResponsePost(data []aggregate.Post) *proto.ResponseManyResponsePost {
-	posts := make([]*proto.ResponsePostAggregate, len(data))
+func (p PostMapper) PostAggregatesToGrpcResponseManyResponsePost(data []*aggregate.Post) *proto.ResponseManyResponsePost {
+	posts := make([]*proto.ResponsePostAggregate, 0, len(data))
 	for _, d := range data {
 
 		posts = append(posts, p.PostAggregateToResponsePostAggregate(d))
@@ -45,5 +46,13 @@ func (p PostMapper) PostAggregatesToGrpcResponseManyResponsePost(data []aggregat
 	}
 	return &proto.ResponseManyResponsePost{
 		Posts: posts,
+	}
+}
+
+func (p PostMapper) PostToGrpcResponsePost(post *model.Post) *proto.ResponsePost {
+	return &proto.ResponsePost{
+		Id:      string(post.Id),
+		Title:   post.Title,
+		Content: post.Content,
 	}
 }

@@ -6,12 +6,55 @@ import (
 	"github.com/OddEer0/golang-practice/resources/model"
 	"github.com/OddEer0/golang-practice/resources/repository"
 	"github.com/OddEer0/golang-practice/resources/sql"
+	"log/slog"
+	"strings"
 	"time"
 )
 
 type userRepository struct {
 	txController sql.TransactionController
 	db           sql.QueryExecutor
+}
+
+func (u *userRepository) GetByQuery(ctx context.Context, opt *model.ManyOpt) ([]*model.User, error) {
+	db := u.getQueryExecutor(ctx)
+	limit := opt.Limit
+	page := (opt.Page - 1) * opt.Limit
+	queryStr := strings.Builder{}
+	queryStr.WriteString(GetUserByQueryPart1)
+	queryStr.WriteString(opt.SortBy)
+	queryStr.WriteString(" ")
+	queryStr.WriteString(opt.SortDir)
+	queryStr.WriteString(GetUserByQueryPart12)
+
+	rows, err := db.Query(ctx, queryStr.String(), limit, page)
+	if err != nil {
+		slog.Error("GetUserByQuery err", slog.Any("cause", err))
+		return nil, domain.ErrInternal
+	}
+	defer rows.Close()
+	users := make([]*model.User, 0, opt.Limit)
+	for rows.Next() {
+		user := &model.User{}
+		err := rows.Scan(
+			&user.Id,
+			&user.Login,
+			&user.Email,
+			&user.Password,
+			&user.UpdatedAt,
+			&user.CreatedAt,
+		)
+		if err != nil {
+			slog.Error("GetUserByQuery rows.Scan err", slog.Any("cause", err))
+			return nil, domain.ErrInternal
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		slog.Error("GetUserByQuery rows.Err", slog.Any("cause", err))
+		return nil, domain.ErrInternal
+	}
+	return users, nil
 }
 
 func (u *userRepository) getQueryExecutor(ctx context.Context) sql.QueryExecutor {
@@ -43,6 +86,7 @@ func (u *userRepository) Create(ctx context.Context, user *model.User) (*model.U
 	db := u.getQueryExecutor(ctx)
 	_, err := db.Exec(ctx, CreateUserQuery, user.Id, user.Login, user.Email, user.Password, user.UpdatedAt, user.CreatedAt)
 	if err != nil {
+		slog.Error("create user error", slog.Any("cause", err))
 		return nil, domain.ErrInternal
 	}
 	return user, nil

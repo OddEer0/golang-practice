@@ -23,13 +23,18 @@ type (
 	}
 )
 
+func (u *userNOUseCase) GetUserByQuery(ctx context.Context, id domain.Id, opt *model.ManyOpt, conns model.UserConns) ([]*PureUserAggregate, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (u *userNOUseCase) Create(ctx context.Context, data *CreateUserData) (PureUser, error) {
 	id := domain.Id(uuid.New().String())
 	_, err := u.userRepository.Create(ctx, &model.User{
-		Id: id,
-		Login: data.Login,
-		Email: data.Email,
-		Password: data.Password, // FIXME - use bcrypt to hash password
+		Id:        id,
+		Login:     data.Login,
+		Email:     data.Email,
+		Password:  data.Password, // FIXME - use bcrypt to hash password
 		UpdatedAt: time.Now(),
 		CreatedAt: time.Now(),
 	})
@@ -37,12 +42,11 @@ func (u *userNOUseCase) Create(ctx context.Context, data *CreateUserData) (PureU
 		return PureUser{}, err
 	}
 	return PureUser{
-		Id: id,
+		Id:    id,
 		Login: data.Login,
 		Email: data.Email,
 	}, nil
 }
-
 
 func (u *userNOUseCase) GetUserById(ctx context.Context, id domain.Id, conns model.UserConns) (PureUserAggregate, error) {
 	user, err := u.userRepository.GetById(ctx, id)
@@ -60,7 +64,7 @@ func (u *userNOUseCase) GetUserById(ctx context.Context, id domain.Id, conns mod
 
 	return PureUserAggregate{
 		Value: PureUser{
-			Id: user.Id,
+			Id:    user.Id,
 			Login: user.Login,
 			Email: user.Email,
 		},
@@ -76,7 +80,7 @@ func (u *userNOUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLo
 	}
 
 	_, err = u.postRepository.UpdateBodyByUserId(ctx, &model.User{
-		Id: id,
+		Id:    id,
 		Login: newLogin,
 	})
 	if err != nil {
@@ -84,7 +88,7 @@ func (u *userNOUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLo
 	}
 
 	return PureUser{
-		Id: user.Id,
+		Id:    user.Id,
 		Login: user.Login,
 		Email: user.Email,
 	}, nil

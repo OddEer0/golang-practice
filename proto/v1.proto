@@ -1,6 +1,7 @@
 syntax = "proto3";
 package resourceV1;
 option go_package = "github.com/OddEer0/golang-practice/resources/proto";
+import "gw/annotations.proto";
 
 message Empty {}
 
@@ -46,14 +47,28 @@ message ResponseUserAggregate {
   repeated ResponsePost posts = 2;
 }
 
+message ResponseManyUserAggregate {
+  repeated ResponseUserAggregate users = 1;
+}
+
 message ResponsePostAggregate {
   ResponsePost value = 1;
-  repeated ResponseComment comments= 2;
+  repeated ResponseComment comments = 2;
   ResponseUser owner = 3;
+}
+
+message ResponseCommentAggregate {
+  ResponseComment value = 1;
+  ResponseUser owner = 2;
+  ResponsePost post = 3;
 }
 
 message ResponseManyResponsePost {
   repeated ResponsePostAggregate posts = 1;
+}
+
+message ResponseManyCommentAggregate {
+  repeated ResponseCommentAggregate comments = 1;
 }
 
 message CreateUserRequest {
@@ -67,6 +82,11 @@ message GetUserByIdRequest {
   ConnOption connOption = 2;
 }
 
+message GetUserByQueryRequest {
+  PaginationOption option = 1;
+  ConnOption connOption = 2;
+}
+
 message UpdateUserLoginRequest {
   string id = 1;
   string newLogin = 2;
@@ -74,7 +94,8 @@ message UpdateUserLoginRequest {
 
 message GetPostsByUserIdRequest {
   string userId = 1;
-  ConnOption connOption = 2;
+  PaginationOption option = 2;
+  ConnOption connOption = 3;
 }
 
 message GetPostByIdRequest {
@@ -82,11 +103,82 @@ message GetPostByIdRequest {
   ConnOption connOption = 3;
 }
 
-service NewsService {
-  rpc getUserById(GetUserByIdRequest) returns(ResponseUserAggregate) {}
-  rpc createUser(CreateUserRequest) returns(ResponseUser) {}
-  rpc updateUserLogin(UpdateUserLoginRequest) returns(ResponseUser) {}
+message CreatePostRequest {
+  string title = 1;
+  string content = 2;
+  string ownerId = 3;
+}
 
-  rpc getPostsByUserId(GetPostsByUserIdRequest) returns(ResponseManyResponsePost) {}
-  rpc getPostById(GetPostByIdRequest) returns(ResponsePostAggregate) {}
+message CreateCommentRequest {
+  string message = 1;
+  string ownerId = 2;
+  string postId = 3;
+}
+
+message GetCommentByIdRequest {
+  string id = 1;
+  ConnOption connOption = 2;
+  PaginationOption option = 3;
+}
+
+message UpdateCommentByIdRequest {
+  string id = 1;
+  string message = 2;
+}
+
+message UpdatePostByIdRequest {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+service NewsService {
+  rpc getUserById(GetUserByIdRequest) returns(ResponseUserAggregate) {
+    option (google.api.http) = {
+      get: "/v1/user"
+    };
+  }
+  rpc getUserByQuery(GetUserByQueryRequest) returns(ResponseManyUserAggregate) {}
+  rpc createUser(CreateUserRequest) returns(ResponseUser) {
+    option (google.api.http) = {
+      post: "/v1/user"
+      body: "*"
+    };
+  }
+  rpc updateUserLogin(UpdateUserLoginRequest) returns(ResponseUser) {
+    option (google.api.http) = {
+      put: "/v1/user"
+      body: "*"
+    };
+  }
+  rpc deleteUserById(Id) returns(Empty) {}
+
+  rpc getPostsByUserId(GetPostsByUserIdRequest) returns(ResponseManyResponsePost) {
+    option (google.api.http) = {
+      get: "/v1/user-posts"
+    };
+  }
+  rpc getPostById(GetPostByIdRequest) returns(ResponsePostAggregate) {
+    option (google.api.http) = {
+      get: "/v1/post"
+    };
+  }
+  rpc createPost(CreatePostRequest) returns(ResponsePost) {
+    option (google.api.http) = {
+      post: "/v1/post"
+      body: "*"
+    };
+  }
+  rpc deletePostById(Id) returns(Empty) {}
+  rpc updatePostById(UpdatePostByIdRequest) returns(ResponsePost) {}
+
+  rpc createComment(CreateCommentRequest) returns(ResponseComment) {
+    option (google.api.http) = {
+      post: "/v1/comment"
+    };
+  }
+  rpc getCommentsByPostId(GetCommentByIdRequest) returns(ResponseManyCommentAggregate) {}
+  rpc getCommentsByOwnerId(GetCommentByIdRequest) returns(ResponseManyCommentAggregate) {}
+  rpc updateCommentById(UpdateCommentByIdRequest) returns(ResponseComment) {}
+  rpc deleteCommentById(Id) returns(Empty) {}
 }

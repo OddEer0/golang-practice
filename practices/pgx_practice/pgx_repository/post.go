@@ -7,6 +7,8 @@ import (
 	"github.com/OddEer0/golang-practice/resources/repository"
 	"github.com/OddEer0/golang-practice/resources/sql"
 	"github.com/google/uuid"
+	"log/slog"
+	"strings"
 	"time"
 )
 
@@ -43,17 +45,20 @@ func (p *postRepository) GetById(ctx context.Context, id domain.Id) (*model.Post
 func (p *postRepository) GetByOwnerId(ctx context.Context, id domain.Id, opt *model.ManyOpt) ([]*model.Post, error) {
 	db := p.getQueryExecutor(ctx)
 	limit := opt.Limit
-	page := opt.Page * (opt.Limit + 1)
-	queryStr := GetPostByQueryAsc
-	if opt.SortDir == "Desc" {
-		queryStr += GetPostByQueryDesc
-	}
-	rows, err := db.Query(ctx, queryStr, id, opt.SortBy, limit, page)
+	page := (opt.Page - 1) * opt.Limit
+	queryStr := strings.Builder{}
+	queryStr.WriteString(GetPostByOwnerIdQueryPart1)
+	queryStr.WriteString(opt.SortBy)
+	queryStr.WriteString(" ")
+	queryStr.WriteString(opt.SortDir)
+	queryStr.WriteString(GetPostByOwnerIdQueryPart12)
+	rows, err := db.Query(ctx, queryStr.String(), id, limit, page)
 	if err != nil {
+		slog.Error("db query failed", slog.Any("cause", err))
 		return nil, domain.ErrInternal
 	}
 	defer rows.Close()
-	var posts []*model.Post
+	posts := make([]*model.Post, 0, 100)
 	for rows.Next() {
 		post := &model.Post{}
 		err := rows.Scan(
@@ -65,11 +70,14 @@ func (p *postRepository) GetByOwnerId(ctx context.Context, id domain.Id, opt *mo
 			&post.UpdatedAt,
 		)
 		if err != nil {
+			slog.Error("scan failed", slog.Any("cause", err))
 			return nil, domain.ErrInternal
 		}
+		posts = append(posts, post)
 	}
 	err = rows.Err()
 	if err != nil {
+		slog.Error("rows error", slog.Any("cause", err))
 		return nil, domain.ErrInternal
 	}
 
@@ -80,6 +88,7 @@ func (p *postRepository) Create(ctx context.Context, post *model.Post) (*model.P
 	db := p.getQueryExecutor(ctx)
 	_, err := db.Exec(ctx, CreatePostQuery, post.Id, post.OwnerId, post.Title, post.Content, post.UpdatedAt, post.CreatedAt)
 	if err != nil {
+		slog.Error("create post error", slog.Any("cause", err))
 		return nil, domain.ErrInternal
 	}
 	return post, nil
@@ -105,6 +114,7 @@ func (p *postRepository) DeleteById(ctx context.Context, id domain.Id) error {
 	return nil
 }
 
+// TODO - fix correct update
 func (p *postRepository) UpdateBodyByUserId(ctx context.Context, user *model.User) (*model.Post, error) {
 	uniq := uuid.New().String()
 	db := p.getQueryExecutor(ctx)

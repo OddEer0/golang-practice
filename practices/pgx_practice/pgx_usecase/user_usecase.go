@@ -3,6 +3,7 @@ package pgxUseCase
 import (
 	"context"
 	"github.com/OddEer0/golang-practice/resources/sql"
+	"log/slog"
 	"time"
 
 	"github.com/OddEer0/golang-practice/resources/domain"
@@ -25,22 +26,62 @@ type (
 	}
 
 	PureUserAggregate struct {
-		Value PureUser
-		Posts []*model.Post
+		Value    PureUser
+		Posts    []*model.Post
+		Comments []*model.Comment
 	}
 
 	UserUseCase interface {
 		Create(context.Context, *CreateUserData) (PureUser, error)
 		GetUserById(context.Context, domain.Id, model.UserConns) (PureUserAggregate, error)
+		GetUserByQuery(context.Context, domain.Id, *model.ManyOpt, model.UserConns) ([]*PureUserAggregate, error)
 		UpdateUserLogin(context.Context, domain.Id, string) (PureUser, error)
 	}
 
 	userUseCase struct {
-		userRepository repository.User
-		postRepository repository.Post
-		transactor     sql.Transactor
+		userRepository    repository.User
+		postRepository    repository.Post
+		commentRepository repository.Comment
+		transactor        sql.Transactor
 	}
 )
+
+func (u *userUseCase) GetUserByQuery(ctx context.Context, id domain.Id, opt *model.ManyOpt, conns model.UserConns) ([]*PureUserAggregate, error) {
+	users, err := u.userRepository.GetByQuery(ctx, opt)
+	if err != nil {
+		return nil, err
+	}
+	userAggregates := make([]*PureUserAggregate, 0, len(users))
+	for _, user := range users {
+		pureUserAggregate := &PureUserAggregate{
+			Value: PureUser{
+				Id:    user.Id,
+				Login: user.Login,
+				Email: user.Email,
+			},
+		}
+
+		if option, ok := conns["posts"]; ok {
+			posts, err := u.postRepository.GetByOwnerId(ctx, user.Id, option)
+			if err != nil {
+				return nil, err
+			}
+			pureUserAggregate.Posts = posts
+		}
+
+		if option, ok := conns["comments"]; ok {
+			comments, err := u.commentRepository.GetByOwnerId(ctx, user.Id, option)
+			if err != nil {
+				return nil, err
+			}
+			pureUserAggregate.Comments = comments
+		}
+
+		userAggregates = append(userAggregates, pureUserAggregate)
+	}
+
+	return userAggregates, nil
+}
 
 func (u *userUseCase) Create(ctx context.Context, data *CreateUserData) (PureUser, error) {
 	id := domain.Id(uuid.New().String())
@@ -91,19 +132,34 @@ func (u *userUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogi
 	user := &model.User{}
 	var err error
 	err = u.transactor.WithinTransaction(ctx, func(transactionCtx context.Context) error {
-		user, err = u.userRepository.UpdateLoginById(ctx, id, newLogin)
+		user, err = u.userRepository.UpdateLoginById(transactionCtx, id, newLogin)
 		if err != nil {
 			return err
 		}
-		_, err = u.postRepository.UpdateBodyByUserId(ctx, &model.User{
+		slog.Info("update user login success")
+		_, err = u.postRepository.UpdateBodyByUserId(transactionCtx, &model.User{
 			Id:    id,
 			Login: newLogin,
 		})
 		if err != nil {
 			return err
 		}
+		slog.Info("update posts body success")
+		err = u.commentRepository.UpdateBodyByUserId(transactionCtx, &model.User{
+			Id:    id,
+			Login: newLogin,
+		})
+		if err != nil {
+			return err
+		}
+		slog.Info("update comments body success")
+		//return errors.New("check transaction work")
 		return nil
 	})
+
+	if err != nil {
+		return PureUser{}, err
+	}
 
 	return PureUser{
 		Id:    user.Id,
@@ -112,10 +168,11 @@ func (u *userUseCase) UpdateUserLogin(ctx context.Context, id domain.Id, newLogi
 	}, nil
 }
 
-func NewUserUseCase(userRepository repository.User, postRepository repository.Post, transactor sql.Transactor) UserUseCase {
+func NewUserUseCase(userRepository repository.User, postRepository repository.Post, commentRepository repository.Comment, transactor sql.Transactor) UserUseCase {
 	return &userUseCase{
-		userRepository: userRepository,
-		postRepository: postRepository,
-		transactor:     transactor,
+		userRepository:    userRepository,
+		postRepository:    postRepository,
+		commentRepository: commentRepository,
+		transactor:        transactor,
 	}
 }

@@ -19,11 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	NewsService_GetUserById_FullMethodName      = "/resourceV1.NewsService/getUserById"
-	NewsService_CreateUser_FullMethodName       = "/resourceV1.NewsService/createUser"
-	NewsService_UpdateUserLogin_FullMethodName  = "/resourceV1.NewsService/updateUserLogin"
-	NewsService_GetPostsByUserId_FullMethodName = "/resourceV1.NewsService/getPostsByUserId"
-	NewsService_GetPostById_FullMethodName      = "/resourceV1.NewsService/getPostById"
+	NewsService_GetUserById_FullMethodName          = "/resourceV1.NewsService/getUserById"
+	NewsService_GetUserByQuery_FullMethodName       = "/resourceV1.NewsService/getUserByQuery"
+	NewsService_CreateUser_FullMethodName           = "/resourceV1.NewsService/createUser"
+	NewsService_UpdateUserLogin_FullMethodName      = "/resourceV1.NewsService/updateUserLogin"
+	NewsService_DeleteUserById_FullMethodName       = "/resourceV1.NewsService/deleteUserById"
+	NewsService_GetPostsByUserId_FullMethodName     = "/resourceV1.NewsService/getPostsByUserId"
+	NewsService_GetPostById_FullMethodName          = "/resourceV1.NewsService/getPostById"
+	NewsService_CreatePost_FullMethodName           = "/resourceV1.NewsService/createPost"
+	NewsService_DeletePostById_FullMethodName       = "/resourceV1.NewsService/deletePostById"
+	NewsService_UpdatePostById_FullMethodName       = "/resourceV1.NewsService/updatePostById"
+	NewsService_CreateComment_FullMethodName        = "/resourceV1.NewsService/createComment"
+	NewsService_GetCommentsByPostId_FullMethodName  = "/resourceV1.NewsService/getCommentsByPostId"
+	NewsService_GetCommentsByOwnerId_FullMethodName = "/resourceV1.NewsService/getCommentsByOwnerId"
+	NewsService_UpdateCommentById_FullMethodName    = "/resourceV1.NewsService/updateCommentById"
+	NewsService_DeleteCommentById_FullMethodName    = "/resourceV1.NewsService/deleteCommentById"
 )
 
 // NewsServiceClient is the client API for NewsService service.
@@ -31,10 +41,20 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NewsServiceClient interface {
 	GetUserById(ctx context.Context, in *GetUserByIdRequest, opts ...grpc.CallOption) (*ResponseUserAggregate, error)
+	GetUserByQuery(ctx context.Context, in *GetUserByQueryRequest, opts ...grpc.CallOption) (*ResponseManyUserAggregate, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*ResponseUser, error)
 	UpdateUserLogin(ctx context.Context, in *UpdateUserLoginRequest, opts ...grpc.CallOption) (*ResponseUser, error)
+	DeleteUserById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error)
 	GetPostsByUserId(ctx context.Context, in *GetPostsByUserIdRequest, opts ...grpc.CallOption) (*ResponseManyResponsePost, error)
 	GetPostById(ctx context.Context, in *GetPostByIdRequest, opts ...grpc.CallOption) (*ResponsePostAggregate, error)
+	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*ResponsePost, error)
+	DeletePostById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error)
+	UpdatePostById(ctx context.Context, in *UpdatePostByIdRequest, opts ...grpc.CallOption) (*ResponsePost, error)
+	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*ResponseComment, error)
+	GetCommentsByPostId(ctx context.Context, in *GetCommentByIdRequest, opts ...grpc.CallOption) (*ResponseManyCommentAggregate, error)
+	GetCommentsByOwnerId(ctx context.Context, in *GetCommentByIdRequest, opts ...grpc.CallOption) (*ResponseManyCommentAggregate, error)
+	UpdateCommentById(ctx context.Context, in *UpdateCommentByIdRequest, opts ...grpc.CallOption) (*ResponseComment, error)
+	DeleteCommentById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type newsServiceClient struct {
@@ -49,6 +69,16 @@ func (c *newsServiceClient) GetUserById(ctx context.Context, in *GetUserByIdRequ
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResponseUserAggregate)
 	err := c.cc.Invoke(ctx, NewsService_GetUserById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) GetUserByQuery(ctx context.Context, in *GetUserByQueryRequest, opts ...grpc.CallOption) (*ResponseManyUserAggregate, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponseManyUserAggregate)
+	err := c.cc.Invoke(ctx, NewsService_GetUserByQuery_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +105,16 @@ func (c *newsServiceClient) UpdateUserLogin(ctx context.Context, in *UpdateUserL
 	return out, nil
 }
 
+func (c *newsServiceClient) DeleteUserById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, NewsService_DeleteUserById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *newsServiceClient) GetPostsByUserId(ctx context.Context, in *GetPostsByUserIdRequest, opts ...grpc.CallOption) (*ResponseManyResponsePost, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResponseManyResponsePost)
@@ -95,15 +135,105 @@ func (c *newsServiceClient) GetPostById(ctx context.Context, in *GetPostByIdRequ
 	return out, nil
 }
 
+func (c *newsServiceClient) CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*ResponsePost, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponsePost)
+	err := c.cc.Invoke(ctx, NewsService_CreatePost_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) DeletePostById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, NewsService_DeletePostById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) UpdatePostById(ctx context.Context, in *UpdatePostByIdRequest, opts ...grpc.CallOption) (*ResponsePost, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponsePost)
+	err := c.cc.Invoke(ctx, NewsService_UpdatePostById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*ResponseComment, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponseComment)
+	err := c.cc.Invoke(ctx, NewsService_CreateComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) GetCommentsByPostId(ctx context.Context, in *GetCommentByIdRequest, opts ...grpc.CallOption) (*ResponseManyCommentAggregate, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponseManyCommentAggregate)
+	err := c.cc.Invoke(ctx, NewsService_GetCommentsByPostId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) GetCommentsByOwnerId(ctx context.Context, in *GetCommentByIdRequest, opts ...grpc.CallOption) (*ResponseManyCommentAggregate, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponseManyCommentAggregate)
+	err := c.cc.Invoke(ctx, NewsService_GetCommentsByOwnerId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) UpdateCommentById(ctx context.Context, in *UpdateCommentByIdRequest, opts ...grpc.CallOption) (*ResponseComment, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponseComment)
+	err := c.cc.Invoke(ctx, NewsService_UpdateCommentById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *newsServiceClient) DeleteCommentById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, NewsService_DeleteCommentById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NewsServiceServer is the server API for NewsService service.
 // All implementations must embed UnimplementedNewsServiceServer
 // for forward compatibility
 type NewsServiceServer interface {
 	GetUserById(context.Context, *GetUserByIdRequest) (*ResponseUserAggregate, error)
+	GetUserByQuery(context.Context, *GetUserByQueryRequest) (*ResponseManyUserAggregate, error)
 	CreateUser(context.Context, *CreateUserRequest) (*ResponseUser, error)
 	UpdateUserLogin(context.Context, *UpdateUserLoginRequest) (*ResponseUser, error)
+	DeleteUserById(context.Context, *Id) (*Empty, error)
 	GetPostsByUserId(context.Context, *GetPostsByUserIdRequest) (*ResponseManyResponsePost, error)
 	GetPostById(context.Context, *GetPostByIdRequest) (*ResponsePostAggregate, error)
+	CreatePost(context.Context, *CreatePostRequest) (*ResponsePost, error)
+	DeletePostById(context.Context, *Id) (*Empty, error)
+	UpdatePostById(context.Context, *UpdatePostByIdRequest) (*ResponsePost, error)
+	CreateComment(context.Context, *CreateCommentRequest) (*ResponseComment, error)
+	GetCommentsByPostId(context.Context, *GetCommentByIdRequest) (*ResponseManyCommentAggregate, error)
+	GetCommentsByOwnerId(context.Context, *GetCommentByIdRequest) (*ResponseManyCommentAggregate, error)
+	UpdateCommentById(context.Context, *UpdateCommentByIdRequest) (*ResponseComment, error)
+	DeleteCommentById(context.Context, *Id) (*Empty, error)
 	mustEmbedUnimplementedNewsServiceServer()
 }
 
@@ -114,17 +244,47 @@ type UnimplementedNewsServiceServer struct {
 func (UnimplementedNewsServiceServer) GetUserById(context.Context, *GetUserByIdRequest) (*ResponseUserAggregate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserById not implemented")
 }
+func (UnimplementedNewsServiceServer) GetUserByQuery(context.Context, *GetUserByQueryRequest) (*ResponseManyUserAggregate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByQuery not implemented")
+}
 func (UnimplementedNewsServiceServer) CreateUser(context.Context, *CreateUserRequest) (*ResponseUser, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
 func (UnimplementedNewsServiceServer) UpdateUserLogin(context.Context, *UpdateUserLoginRequest) (*ResponseUser, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserLogin not implemented")
 }
+func (UnimplementedNewsServiceServer) DeleteUserById(context.Context, *Id) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserById not implemented")
+}
 func (UnimplementedNewsServiceServer) GetPostsByUserId(context.Context, *GetPostsByUserIdRequest) (*ResponseManyResponsePost, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPostsByUserId not implemented")
 }
 func (UnimplementedNewsServiceServer) GetPostById(context.Context, *GetPostByIdRequest) (*ResponsePostAggregate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPostById not implemented")
+}
+func (UnimplementedNewsServiceServer) CreatePost(context.Context, *CreatePostRequest) (*ResponsePost, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePost not implemented")
+}
+func (UnimplementedNewsServiceServer) DeletePostById(context.Context, *Id) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePostById not implemented")
+}
+func (UnimplementedNewsServiceServer) UpdatePostById(context.Context, *UpdatePostByIdRequest) (*ResponsePost, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePostById not implemented")
+}
+func (UnimplementedNewsServiceServer) CreateComment(context.Context, *CreateCommentRequest) (*ResponseComment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateComment not implemented")
+}
+func (UnimplementedNewsServiceServer) GetCommentsByPostId(context.Context, *GetCommentByIdRequest) (*ResponseManyCommentAggregate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCommentsByPostId not implemented")
+}
+func (UnimplementedNewsServiceServer) GetCommentsByOwnerId(context.Context, *GetCommentByIdRequest) (*ResponseManyCommentAggregate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCommentsByOwnerId not implemented")
+}
+func (UnimplementedNewsServiceServer) UpdateCommentById(context.Context, *UpdateCommentByIdRequest) (*ResponseComment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCommentById not implemented")
+}
+func (UnimplementedNewsServiceServer) DeleteCommentById(context.Context, *Id) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteCommentById not implemented")
 }
 func (UnimplementedNewsServiceServer) mustEmbedUnimplementedNewsServiceServer() {}
 
@@ -153,6 +313,24 @@ func _NewsService_GetUserById_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NewsServiceServer).GetUserById(ctx, req.(*GetUserByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_GetUserByQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByQueryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).GetUserByQuery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_GetUserByQuery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).GetUserByQuery(ctx, req.(*GetUserByQueryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -193,6 +371,24 @@ func _NewsService_UpdateUserLogin_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NewsService_DeleteUserById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).DeleteUserById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_DeleteUserById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).DeleteUserById(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _NewsService_GetPostsByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetPostsByUserIdRequest)
 	if err := dec(in); err != nil {
@@ -229,6 +425,150 @@ func _NewsService_GetPostById_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NewsService_CreatePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).CreatePost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_CreatePost_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).CreatePost(ctx, req.(*CreatePostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_DeletePostById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).DeletePostById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_DeletePostById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).DeletePostById(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_UpdatePostById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePostByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).UpdatePostById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_UpdatePostById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).UpdatePostById(ctx, req.(*UpdatePostByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_CreateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).CreateComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_CreateComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).CreateComment(ctx, req.(*CreateCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_GetCommentsByPostId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCommentByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).GetCommentsByPostId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_GetCommentsByPostId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).GetCommentsByPostId(ctx, req.(*GetCommentByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_GetCommentsByOwnerId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCommentByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).GetCommentsByOwnerId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_GetCommentsByOwnerId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).GetCommentsByOwnerId(ctx, req.(*GetCommentByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_UpdateCommentById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCommentByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).UpdateCommentById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_UpdateCommentById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).UpdateCommentById(ctx, req.(*UpdateCommentByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NewsService_DeleteCommentById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NewsServiceServer).DeleteCommentById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NewsService_DeleteCommentById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NewsServiceServer).DeleteCommentById(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NewsService_ServiceDesc is the grpc.ServiceDesc for NewsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -241,6 +581,10 @@ var NewsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _NewsService_GetUserById_Handler,
 		},
 		{
+			MethodName: "getUserByQuery",
+			Handler:    _NewsService_GetUserByQuery_Handler,
+		},
+		{
 			MethodName: "createUser",
 			Handler:    _NewsService_CreateUser_Handler,
 		},
@@ -249,12 +593,48 @@ var NewsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _NewsService_UpdateUserLogin_Handler,
 		},
 		{
+			MethodName: "deleteUserById",
+			Handler:    _NewsService_DeleteUserById_Handler,
+		},
+		{
 			MethodName: "getPostsByUserId",
 			Handler:    _NewsService_GetPostsByUserId_Handler,
 		},
 		{
 			MethodName: "getPostById",
 			Handler:    _NewsService_GetPostById_Handler,
+		},
+		{
+			MethodName: "createPost",
+			Handler:    _NewsService_CreatePost_Handler,
+		},
+		{
+			MethodName: "deletePostById",
+			Handler:    _NewsService_DeletePostById_Handler,
+		},
+		{
+			MethodName: "updatePostById",
+			Handler:    _NewsService_UpdatePostById_Handler,
+		},
+		{
+			MethodName: "createComment",
+			Handler:    _NewsService_CreateComment_Handler,
+		},
+		{
+			MethodName: "getCommentsByPostId",
+			Handler:    _NewsService_GetCommentsByPostId_Handler,
+		},
+		{
+			MethodName: "getCommentsByOwnerId",
+			Handler:    _NewsService_GetCommentsByOwnerId_Handler,
+		},
+		{
+			MethodName: "updateCommentById",
+			Handler:    _NewsService_UpdateCommentById_Handler,
+		},
+		{
+			MethodName: "deleteCommentById",
+			Handler:    _NewsService_DeleteCommentById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -15,6 +15,7 @@ type (
 		CommentRepository repository.Comment
 		pgxUseCase.UserUseCase
 		pgxUseCase.PostUseCase
+		pgxUseCase.CommentUseCase
 	}
 )
 
@@ -27,13 +28,16 @@ func New(db *pgxpool.Pool) *Interactor {
 	userRepo := pgxRepository.NewUserRepository(db, txController)
 	postRepo := pgxRepository.NewPostRepository(db, txController)
 	commentRepo := pgxRepository.NewCommentRepository(db, txController)
-	userUseCase := pgxUseCase.NewUserUseCase(userRepo, postRepo, transactor)
+	userUseCase := pgxUseCase.NewUserUseCase(userRepo, postRepo, commentRepo, transactor)
 	postUseCase := pgxUseCase.NewPostUseCase(postRepo, commentRepo, transactor)
+	commentUseCase := pgxUseCase.NewCommentUseCase(commentRepo, postRepo, userRepo, transactor)
 
 	return &Interactor{
-		UserRepository: userRepo,
-		PostRepository: postRepo,
-		UserUseCase:    userUseCase,
-		PostUseCase:    postUseCase,
+		UserRepository:    userRepo,
+		PostRepository:    postRepo,
+		CommentRepository: commentRepo,
+		UserUseCase:       userUseCase,
+		PostUseCase:       postUseCase,
+		CommentUseCase:    commentUseCase,
 	}
 }
