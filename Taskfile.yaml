@@ -12,6 +12,9 @@ tasks:
   proto:
     cmds:
       - protoc -I $PROTO_SRC $PROTO_FILES --go_out=$PROTO_OUT --go_opt=paths=source_relative --go-grpc_out=$PROTO_OUT --go-grpc_opt=paths=source_relative --grpc-gateway_out=$PROTO_OUT --grpc-gateway_opt=paths=source_relative --grpc-gateway_opt=generate_unbound_methods=true
+  slog:
+    cmds:
+      - go run practices/slog_logger/main/main.go
   pgx:
     cmds:
       - CONFIG_PATH=config/pgx_config.yaml go run practices/pgx_practice/main/main.go
@@ -22,3 +25,6 @@ tasks:
       - export GOOSE_DBSTRING=postgresql://eer0:hahaha1234@localhost:5500/golang-practice?sslmode=disable
       - export GOOSE_MIGRATION_DIR=migration/pgx_goose_migration
       - goose up
+  mongo:
+    cmds:
+      - CONFIG_PATH=config/pgx_config.yaml go run practices/mongo_practice/main/main.go
